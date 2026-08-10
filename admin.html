@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>9841 ADMIN</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    min-height:100vh;
+    background:#060606;
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+header{
+    height:70px;
+    padding:0 30px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    background:rgba(5,5,5,.96);
+}
+
+.logo-title{
+    font-size:20px;
+    font-weight:900;
+    letter-spacing:2px;
+}
+
+.logo-title span{
+    color:#555;
+    font-size:9px;
+    letter-spacing:3px;
+    margin-left:8px;
+}
+
+.logout{
+    padding:9px 17px;
+    border:1px solid rgba(255,255,255,.15);
+    background:#101010;
+    color:#aaa;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.logout:hover{
+    color:#fff;
+    border-color:rgba(255,255,255,.4);
+}
+
+.container{
+    width:min(1100px,94%);
+    margin:35px auto 100px;
+}
+
+.heading{
+    margin-bottom:25px;
+}
+
+.heading h1{
+    font-size:30px;
+    font-weight:800;
+}
+
+.heading p{
+    margin-top:7px;
+    color:#666;
+    font-size:11px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.box{
+    background:#0d0d0d;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    padding:20px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.box-title{
+    margin-bottom:18px;
+    color:#aaa;
+    font-size:10px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+
+.field{
+    margin-bottom:15px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    color:#777;
+    font-size:10px;
+}
+
+input[type=text]{
+    width:100%;
+    height:44px;
+    padding:0 13px;
+    border-radius:6px;
+    outline:none;
+    border:1px solid rgba(255,255,255,.08);
+    background:#070707;
+    color:#fff;
+    transition:.25s;
+}
+
+input[type=text]:focus{
+    border-color:rgba(255,255,255,.35);
+    box-shadow:0 0 20px rgba(255,255,255,.025);
+}
+
+.row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.media-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.media{
+    min-height:250px;
+    border:1px dashed rgba(255,255,255,.14);
+    border-radius:10px;
+    padding:15px;
+    text-align:center;
+    background:#090909;
+}
+
+.preview{
+    width:100%;
+    height:120px;
+    margin-bottom:13px;
+    border-radius:7px;
+    object-fit:contain;
+    background:#050505;
+    border:1px solid rgba(255,255,255,.07);
+}
+
+.preview.bg{
+    object-fit:cover;
+}
+
+.file{
+    width:100%;
+    color:#777;
+    font-size:9px;
+}
+
+.file::file-selector-button{
+    padding:9px 12px;
+    margin-right:7px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:5px;
+    background:#151515;
+    color:#fff;
+    cursor:pointer;
+}
+
+.upload-status{
+    display:block;
+    margin-top:8px;
+    min-height:14px;
+    color:#555;
+    font-size:8px;
+}
+
+.toggle-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:13px 0;
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.toggle-name{
+    font-size:11px;
+    color:#aaa;
+}
+
+.switch{
+    position:relative;
+    width:45px;
+    height:24px;
+}
+
+.switch input{
+    display:none;
+}
+
+.slider{
+    position:absolute;
+    inset:0;
+    background:#222;
+    border-radius:20px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.slider:before{
+    content:"";
+    position:absolute;
+    width:18px;
+    height:18px;
+    left:3px;
+    top:3px;
+    border-radius:50%;
+    background:#666;
+    transition:.3s;
+}
+
+.switch input:checked + .slider{
+    background:#eee;
+}
+
+.switch input:checked + .slider:before{
+    transform:translateX(21px);
+    background:#000;
+}
+
+.range{
+    width:100%;
+    accent-color:#fff;
+}
+
+.range-value{
+    color:#888;
+    font-size:9px;
+}
+
+.save{
+    position:fixed;
+    right:30px;
+    bottom:25px;
+    height:52px;
+    min-width:190px;
+    border:0;
+    border-radius:8px;
+    background:#fff;
+    color:#000;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:1px;
+    cursor:pointer;
+    box-shadow:0 15px 45px rgba(0,0,0,.55);
+    transition:.3s;
+}
+
+.save:hover{
+    transform:translateY(-3px);
+    box-shadow:0 20px 55px rgba(0,0,0,.7);
+}
+
+.status{
+    position:fixed;
+    right:30px;
+    bottom:85px;
+    font-size:10px;
+    color:#777;
+}
+
+@media(max-width:750px){
+
+    .grid,
+    .media-grid,
+    .row{
+        grid-template-columns:1fr;
+    }
+
+    .full{
+        grid-column:auto;
+    }
+
+    header{
+        padding:0 15px;
+    }
+
+    .container{
+        width:92%;
+    }
+
+    .save{
+        right:15px;
+        bottom:15px;
+    }
+
+    .status{
+        right:15px;
+        bottom:75px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo-title">
+        9841
+        <span>ADMIN PANEL</span>
+    </div>
+
+    <button id="logout" class="logout">
+        LOGOUT
+    </button>
+
+</header>
+
+
+<div class="container">
+
+    <div class="heading">
+
+        <h1>
+            Website Settings
+        </h1>
+
+        <p>
+            แก้ไขเว็บไซต์แบบ Realtime ผ่าน Firebase
+        </p>
+
+    </div>
+
+
+    <div class="grid">
+
+
+        <!-- =================================================
+             WEBSITE
+        ================================================== -->
+
+        <div class="box full">
+
+            <div class="box-title">
+                WEBSITE
+            </div>
+
+            <div class="field">
+
+                <label>
+                    ชื่อเว็บไซต์
+                </label>
+
+                <input
+                    id="siteName"
+                    type="text"
+                    placeholder="9841 ELITESTYLE"
+                >
+
+            </div>
+
+
+            <div class="row">
+
+                <div class="field">
+
+                    <label>
+                        หัวข้อใหญ่
+                    </label>
+
+                    <input
+                        id="title"
+                        type="text"
+                        placeholder="9841 ELITESTYLE"
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>
+                        ข้อความเล็ก
+                    </label>
+
+                    <input
+                        id="subtitle"
+                        type="text"
+                        placeholder="HALL OF 9841"
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             MEDIA
+        ================================================== -->
+
+        <div class="box full">
+
+            <div class="box-title">
+                MEDIA
+            </div>
+
+
+            <div class="media-grid">
+
+
+                <!-- BACKGROUND -->
+
+                <div class="media">
+
+                    <label>
+                        BACKGROUND IMAGE
+                    </label>
+
+                    <img
+                        id="backgroundPreview"
+                        class="preview bg"
+                        alt=""
+                    >
+
+                    <input
+                        id="backgroundFile"
+                        class="file"
+                        type="file"
+                        accept="image/*"
+                    >
+
+                    <span
+                        id="backgroundStatus"
+                        class="upload-status"
+                    >
+                        เลือกรูปเพื่ออัปโหลด
+                    </span>
+
+                </div>
+
+
+                <!-- LOGO -->
+
+                <div class="media">
+
+                    <label>
+                        CENTER LOGO
+                    </label>
+
+                    <img
+                        id="logoPreview"
+                        class="preview"
+                        alt=""
+                    >
+
+                    <input
+                        id="logoFile"
+                        class="file"
+                        type="file"
+                        accept="image/*"
+                    >
+
+                    <span
+                        id="logoStatus"
+                        class="upload-status"
+                    >
+                        เลือกรูปเพื่ออัปโหลด
+                    </span>
+
+                </div>
+
+
+                <!-- FAVICON -->
+
+                <div class="media">
+
+                    <label>
+                        WEBSITE ICON
+                    </label>
+
+                    <img
+                        id="faviconPreview"
+                        class="preview"
+                        alt=""
+                    >
+
+                    <input
+                        id="faviconFile"
+                        class="file"
+                        type="file"
+                        accept="image/*"
+                    >
+
+                    <span
+                        id="faviconStatus"
+                        class="upload-status"
+                    >
+                        เลือกรูปเพื่ออัปโหลด
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             EFFECTS
+        ================================================== -->
+
+        <div class="box full">
+
+            <div class="box-title">
+                EFFECTS
+            </div>
+
+
+            <!-- PARTICLES -->
+
+            <div class="toggle-row">
+
+                <span class="toggle-name">
+                    Particle / Spark
+                </span>
+
+                <label class="switch">
+
+                    <input
+                        id="particles"
+                        type="checkbox"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- SNOW -->
+
+            <div class="toggle-row">
+
+                <span class="toggle-name">
+                    Snow
+                </span>
+
+                <label class="switch">
+
+                    <input
+                        id="snow"
+                        type="checkbox"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- BACKGROUND -->
+
+            <div class="toggle-row">
+
+                <span class="toggle-name">
+                    Background Animation
+                </span>
+
+                <label class="switch">
+
+                    <input
+                        id="backgroundAnimation"
+                        type="checkbox"
+                    >
+
+                    <span class="slider"></span>
+
+                </label>
+
+            </div>
+
+
+            <!-- PARTICLE COUNT -->
+
+            <div style="padding-top:18px">
+
+                <label>
+
+                    จำนวน Particle
+
+                    <span
+                        id="particleValue"
+                        class="range-value"
+                    >
+                        180
+                    </span>
+
+                </label>
+
+                <input
+                    id="particleCount"
+                    class="range"
+                    type="range"
+                    min="0"
+                    max="400"
+                    value="180"
+                >
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div
+    id="status"
+    class="status"
+></div>
+
+
+<button
+    id="save"
+    class="save"
+>
+    SAVE CHANGES
+</button>
+
+
+<script type="module">
+
+/* =========================================================
+   FIREBASE
+========================================================= */
+
+import {
+    initializeApp
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+import {
+    getStorage,
+    ref,
+    uploadBytes,
+    getDownloadURL
+} from
+"https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js";
+
+
+/* =========================================================
+   FIREBASE CONFIG
+   เปลี่ยนตรงนี้เป็น Config ของ Firebase คุณ
+========================================================= */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyAHPEF07_zyE7hwZRPIBbwV_ewTz-xzdRo",
+
+    authDomain:
+        "sixtyeight-68.firebaseapp.com",
+
+    projectId:
+        "sixtyeight-68",
+
+    storageBucket:
+        "sixtyeight-68.firebasestorage.app",
+
+    messagingSenderId:
+        "736729322969",
+
+    appId:
+        "1:736729322969:web:cfa26d6e4be992ffd7f5c8"
+
+};
+
+
+const app =
+    initializeApp(
+        firebaseConfig
+    );
+
+const auth =
+    getAuth(app);
+
+const db =
+    getFirestore(app);
+
+const storage =
+    getStorage(app);
+
+
+/* =========================================================
+   DEFAULT SETTINGS
+========================================================= */
+
+const DEFAULTS = {
+
+    siteName:
+        "9841 ELITESTYLE",
+
+    title:
+        "9841 ELITESTYLE",
+
+    subtitle:
+        "HALL OF 9841",
+
+    logo:
+        "",
+
+    background:
+        "",
+
+    favicon:
+        "",
+
+    /*
+       ค่าเหล่านี้ยังเก็บไว้ใน Firebase
+       แต่จะไม่มีเมนูให้แก้ใน Admin
+    */
+
+    gangText:
+        "MEMBER GANG",
+
+    gangLink:
+        "gang.html",
+
+    familyText:
+        "MEMBER FAMILY",
+
+    familyLink:
+        "family.html",
+
+    contactText:
+        "ติดต่อทำเว็บ",
+
+    contactLink:
+        "",
+
+    particles:
+        true,
+
+    snow:
+        true,
+
+    backgroundAnimation:
+        true,
+
+    particleCount:
+        180
+
+};
+
+
+let settings = {
+    ...DEFAULTS
+};
+
+
+/* =========================================================
+   HELPER
+========================================================= */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+/* =========================================================
+   AUTH CHECK
+========================================================= */
+
+onAuthStateChanged(
+    auth,
+    async user => {
+
+        if(!user){
+
+            window.location.href =
+                "login.html";
+
+            return;
+
+        }
+
+        await loadSettings();
+
+    }
+);
+
+
+/* =========================================================
+   LOAD SETTINGS
+========================================================= */
+
+async function loadSettings(){
+
+    try{
+
+        const snapshot =
+            await getDoc(
+                doc(
+                    db,
+                    "website",
+                    "settings"
+                )
+            );
+
+
+        if(snapshot.exists()){
+
+            settings = {
+
+                ...DEFAULTS,
+                ...snapshot.data()
+
+            };
+
+        }
+
+
+        fillForm();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        fillForm();
+
+        showStatus(
+            "โหลดข้อมูลไม่สำเร็จ"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FILL FORM
+========================================================= */
+
+function fillForm(){
+
+    $("siteName").value =
+        settings.siteName || "";
+
+    $("title").value =
+        settings.title || "";
+
+    $("subtitle").value =
+        settings.subtitle || "";
+
+
+    $("particles").checked =
+        settings.particles !== false;
+
+    $("snow").checked =
+        settings.snow !== false;
+
+    $("backgroundAnimation").checked =
+        settings.backgroundAnimation !== false;
+
+
+    $("particleCount").value =
+        settings.particleCount ?? 180;
+
+    $("particleValue").textContent =
+        settings.particleCount ?? 180;
+
+
+    setPreview(
+        "backgroundPreview",
+        settings.background
+    );
+
+    setPreview(
+        "logoPreview",
+        settings.logo
+    );
+
+    setPreview(
+        "faviconPreview",
+        settings.favicon
+    );
+
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+function setPreview(
+    id,
+    url
+){
+
+    const image =
+        $(id);
+
+    if(url){
+
+        image.src =
+            url;
+
+    }else{
+
+        image.removeAttribute(
+            "src"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   UPLOAD
+========================================================= */
+
+async function uploadImage(
+    file,
+    folder,
+    statusElement
+){
+
+    if(!file){
+
+        return null;
+
+    }
+
+
+    if(
+        !file.type.startsWith(
+            "image/"
+        )
+    ){
+
+        throw new Error(
+            "ไฟล์ต้องเป็นรูปภาพ"
+        );
+
+    }
+
+
+    if(
+        file.size >
+        10 * 1024 * 1024
+    ){
+
+        throw new Error(
+            "รูปภาพต้องมีขนาดไม่เกิน 10MB"
+        );
+
+    }
+
+
+    statusElement.textContent =
+        "กำลังอัปโหลด...";
+
+
+    const safeName =
+        file.name.replace(
+            /[^a-zA-Z0-9._-]/g,
+            "_"
+        );
+
+
+    const filename =
+        Date.now() +
+        "_" +
+        safeName;
+
+
+    const storageRef =
+        ref(
+            storage,
+            "website/" +
+            folder +
+            "/" +
+            filename
+        );
+
+
+    await uploadBytes(
+        storageRef,
+        file
+    );
+
+
+    const url =
+        await getDownloadURL(
+            storageRef
+        );
+
+
+    statusElement.textContent =
+        "✓ อัปโหลดสำเร็จ";
+
+
+    return url;
+
+}
+
+
+/* =========================================================
+   BACKGROUND UPLOAD
+========================================================= */
+
+$("backgroundFile")
+.addEventListener(
+    "change",
+    async event => {
+
+        const file =
+            event.target.files[0];
+
+        if(!file) return;
+
+
+        try{
+
+            const url =
+                await uploadImage(
+                    file,
+                    "background",
+                    $("backgroundStatus")
+                );
+
+
+            settings.background =
+                url;
+
+
+            setPreview(
+                "backgroundPreview",
+                url
+            );
+
+
+        }catch(error){
+
+            $("backgroundStatus")
+                .textContent =
+                error.message;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   LOGO UPLOAD
+========================================================= */
+
+$("logoFile")
+.addEventListener(
+    "change",
+    async event => {
+
+        const file =
+            event.target.files[0];
+
+        if(!file) return;
+
+
+        try{
+
+            const url =
+                await uploadImage(
+                    file,
+                    "logo",
+                    $("logoStatus")
+                );
+
+
+            settings.logo =
+                url;
+
+
+            setPreview(
+                "logoPreview",
+                url
+            );
+
+
+        }catch(error){
+
+            $("logoStatus")
+                .textContent =
+                error.message;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   FAVICON UPLOAD
+========================================================= */
+
+$("faviconFile")
+.addEventListener(
+    "change",
+    async event => {
+
+        const file =
+            event.target.files[0];
+
+        if(!file) return;
+
+
+        try{
+
+            const url =
+                await uploadImage(
+                    file,
+                    "favicon",
+                    $("faviconStatus")
+                );
+
+
+            settings.favicon =
+                url;
+
+
+            setPreview(
+                "faviconPreview",
+                url
+            );
+
+
+        }catch(error){
+
+            $("faviconStatus")
+                .textContent =
+                error.message;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   PARTICLE RANGE
+========================================================= */
+
+$("particleCount")
+.addEventListener(
+    "input",
+    event => {
+
+        $("particleValue")
+            .textContent =
+            event.target.value;
+
+    }
+);
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+$("save")
+.addEventListener(
+    "click",
+    async () => {
+
+        try{
+
+            showStatus(
+                "กำลังบันทึก..."
+            );
+
+
+            /*
+             * สำคัญ:
+             * BUTTONS / CONTACT
+             * ไม่ได้ถูกสร้างใหม่จาก Form
+             *
+             * ใช้ค่าที่มีอยู่เดิมใน settings
+             * เพื่อไม่ให้ Admin หน้านี้
+             * ลบหรือแก้ค่าเหล่านั้น
+             */
+
+            const newSettings = {
+
+                siteName:
+                    $("siteName")
+                    .value
+                    .trim(),
+
+                title:
+                    $("title")
+                    .value
+                    .trim(),
+
+                subtitle:
+                    $("subtitle")
+                    .value
+                    .trim(),
+
+
+                logo:
+                    settings.logo || "",
+
+                background:
+                    settings.background || "",
+
+                favicon:
+                    settings.favicon || "",
+
+
+                /* LOCKED VALUES */
+
+                gangText:
+                    settings.gangText ||
+                    DEFAULTS.gangText,
+
+                gangLink:
+                    settings.gangLink ||
+                    DEFAULTS.gangLink,
+
+                familyText:
+                    settings.familyText ||
+                    DEFAULTS.familyText,
+
+                familyLink:
+                    settings.familyLink ||
+                    DEFAULTS.familyLink,
+
+                contactText:
+                    settings.contactText ||
+                    DEFAULTS.contactText,
+
+                contactLink:
+                    settings.contactLink ||
+                    DEFAULTS.contactLink,
+
+
+                /* EFFECTS */
+
+                particles:
+                    $("particles")
+                    .checked,
+
+                snow:
+                    $("snow")
+                    .checked,
+
+                backgroundAnimation:
+                    $("backgroundAnimation")
+                    .checked,
+
+                particleCount:
+                    Number(
+                        $("particleCount")
+                        .value
+                    )
+
+            };
+
+
+            await setDoc(
+
+                doc(
+                    db,
+                    "website",
+                    "settings"
+                ),
+
+                newSettings
+
+            );
+
+
+            settings =
+                newSettings;
+
+
+            showStatus(
+                "✓ บันทึกเรียบร้อย"
+            );
+
+
+        }catch(error){
+
+            console.error(error);
+
+            showStatus(
+                "✕ " +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+let statusTimer;
+
+
+function showStatus(
+    message
+){
+
+    $("status").textContent =
+        message;
+
+
+    clearTimeout(
+        statusTimer
+    );
+
+
+    statusTimer =
+        setTimeout(
+            () => {
+
+                $("status")
+                    .textContent =
+                    "";
+
+            },
+            3000
+        );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+$("logout")
+.addEventListener(
+    "click",
+    async () => {
+
+        try{
+
+            await signOut(
+                auth
+            );
+
+            window.location.href =
+                "login.html";
+
+        }catch(error){
+
+            console.error(error);
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CTRL + S
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            (event.ctrlKey ||
+             event.metaKey) &&
+            event.key.toLowerCase()
+            === "s"
+        ){
+
+            event.preventDefault();
+
+            $("save").click();
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
