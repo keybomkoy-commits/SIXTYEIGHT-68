@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GANG MEMBERS</title>
+  <link id="site-favicon" rel="icon" href="">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body {
+      width: 100%; min-height: 100vh; background-color: #050505; color: #ffffff;
+      position: relative; overflow-x: hidden; padding-bottom: 85px; background-size: cover; background-position: center; background-attachment: fixed;
+    }
+
+    /* Animation Smooth Entrance */
+    @keyframes smoothEntrance {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .bg-overlay { position: fixed; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(0, 0, 0, 0.4) 0%, rgba(5, 5, 5, 0.95) 75%); z-index: 1; pointer-events: none; }
+    #particles-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+    .container { 
+      position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 30px 20px; 
+      animation: smoothEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 10px; color: #cccccc; text-decoration: none;
+      font-size: 0.95rem; font-weight: 500; background: rgba(255, 255, 255, 0.05); padding: 8px 18px;
+      border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .btn-back:hover { color: #ffffff; background: rgba(255, 255, 255, 0.18); transform: translateX(-5px); border-color: rgba(255, 255, 255, 0.3); }
+
+    .header-title { text-align: center; margin-bottom: 30px; }
+    .main-title {
+      font-family: 'Bebas Neue', cursive; font-size: clamp(2.8rem, 5.5vw, 4rem); letter-spacing: 5px;
+      background: linear-gradient(180deg, #ffffff 0%, #888888 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .search-box-wrapper { max-width: 480px; margin: 0 auto 40px auto; position: relative; }
+    .search-input {
+      width: 100%; padding: 12px 18px 12px 48px; background: rgba(20, 20, 20, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 30px; color: #ffffff; font-size: 0.95rem; outline: none; backdrop-filter: blur(12px);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .search-input:focus { border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 15px rgba(255, 255, 255, 0.1); background: rgba(25, 25, 25, 0.95); }
+    .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #888888; transition: color 0.3s ease; }
+    .search-input:focus + .search-icon { color: #ffffff; }
+
+    .category-section { margin-bottom: 45px; display: none; }
+    .category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
+    .category-title { font-family: 'Bebas Neue', cursive; font-size: 1.8rem; letter-spacing: 2px; color: #ffffff; }
+
+    .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px; }
+    .member-card {
+      background: rgba(20, 20, 20, 0.6); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px;
+      padding: 22px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; backdrop-filter: blur(12px); transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .member-card:hover { transform: translateY(-6px) scale(1.02); border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5); }
+
+    .avatar-wrapper {
+      width: 85px; height: 85px; border-radius: 50%; padding: 3px; margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; overflow: hidden;
+      transition: transform 0.35s ease;
+    }
+    .member-card:hover .avatar-wrapper { transform: scale(1.05); }
+    .avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-icon { font-size: 2.2rem; color: #ffffff; }
+
+    .member-name { font-size: 1.05rem; font-weight: 600; color: #ffffff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+    .rank-badge { font-size: 0.68rem; font-weight: 600; padding: 3px 12px; border-radius: 14px; text-transform: uppercase; margin-bottom: 14px; border: 1px solid rgba(255, 255, 255, 0.3); color: #dddddd; }
+
+    .btn-facebook {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 8px 0;
+      background: #ffffff; color: #000000; text-decoration: none; font-size: 0.82rem; font-weight: 600; border-radius: 10px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .btn-facebook:hover { background: #cccccc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); }
+
+    .no-results { text-align: center; padding: 40px; color: #888888; font-size: 1rem; display: none; }
+
+    /* ==========================================
+       LATEST FUTURISTIC AUDIO PLAYER GUI
+       ========================================== */
+    .audio-player-box {
+      position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; align-items: center; gap: 12px;
+      padding: 10px 18px; background: rgba(15, 15, 20, 0.65); border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 40px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .audio-player-box:hover {
+      background: rgba(20, 20, 28, 0.85);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+    .player-info { display: flex; flex-direction: column; max-width: 130px; }
+    .player-title { font-size: 0.82rem; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; transition: color 0.3s ease; }
+    .player-title:hover { color: #cccccc; }
+    .player-status-wrapper { display: flex; align-items: center; gap: 6px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background-color: #666; transition: all 0.3s ease; }
+    .status-dot.active { background-color: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    .player-status { font-size: 0.62rem; color: #888888; font-weight: 500; letter-spacing: 0.5px; }
+    .volume-box { display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.05); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.3s ease; }
+    .volume-box:hover { background: rgba(255, 255, 255, 0.1); }
+    .volume-slider { -webkit-appearance: none; appearance: none; width: 50px; height: 3px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; outline: none; transition: all 0.3s ease; cursor: pointer; }
+    .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #ffffff; cursor: pointer; transition: transform 0.2s ease; }
+    .volume-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+    .player-toggle-btn { background: #ffffff; border: none; color: #000000; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); }
+    .player-toggle-btn:hover { transform: scale(1.1); background: #eeeeee; box-shadow: 0 6px 18px rgba(255, 255, 255, 0.4); }
+    .player-toggle-btn:active { transform: scale(0.92); }
+  </style>
+</head>
+<body>
+
+  <div class="bg-overlay"></div>
+  <canvas id="particles-canvas"></canvas>
+
+  <div class="container">
+    <div class="nav-header">
+      <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> กลับหน้าหลัก</a>
+    </div>
+
+    <div class="header-title">
+      <h1 class="main-title">GANG MEMBERS</h1>
+    </div>
+
+    <div class="search-box-wrapper">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="search-input" class="search-input" placeholder="ค้นหาชื่อสมาชิกแก๊ง..." onkeyup="filterMembers()">
+    </div>
+
+    <div id="members-wrapper">
+      <div class="category-section boss" id="section-boss">
+        <div class="category-header"><i class="fa-solid fa-crown" style="color:#ffffff; font-size: 1.2rem;"></i><h2 class="category-title">THE BOSS</h2></div>
+        <div class="member-grid" id="grid-boss"></div>
+      </div>
+      <div class="category-section leader" id="section-leader">
+        <div class="category-header"><i class="fa-solid fa-fire" style="color:#ffffff; font-size: 1.2rem;"></i><h2 class="category-title">LEADER</h2></div>
+        <div class="member-grid" id="grid-leader"></div>
+      </div>
+      <div class="category-section support" id="section-support">
+        <div class="category-header"><i class="fa-solid fa-shield-halved" style="color:#ffffff; font-size: 1.2rem;"></i><h2 class="category-title">SUPPORT</h2></div>
+        <div class="member-grid" id="grid-support"></div>
+      </div>
+      <!-- เพิ่มหมวดหมู่ VIP ต่อจาก SUPPORT -->
+      <div class="category-section vip" id="section-vip">
+        <div class="category-header"><i class="fa-solid fa-gem" style="color:#ffffff; font-size: 1.2rem;"></i><h2 class="category-title">VIP</h2></div>
+        <div class="member-grid" id="grid-vip"></div>
+      </div>
+      <div class="category-section member" id="section-member">
+        <div class="category-header"><i class="fa-solid fa-user-group" style="color:#ffffff; font-size: 1.2rem;"></i><h2 class="category-title">MEMBER</h2></div>
+        <div class="member-grid" id="grid-member"></div>
+      </div>
+      <div id="no-results" class="no-results">ไม่พบรายชื่อสมาชิกที่ค้นหา</div>
+    </div>
+  </div>
+
+  <audio id="bg-audio" loop preload="auto"><source id="audio-source" src="" type="audio/mpeg"></audio>
+
+  <div class="audio-player-box">
+    <div class="player-info">
+      <a id="player-music-link" href="#" target="_blank" class="player-title">กำลังโหลด...</a>
+      <div class="player-status-wrapper">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="player-status-text" class="player-status">STOPPED</span>
+      </div>
+    </div>
+    <div class="volume-box">
+      <i class="fa-solid fa-volume-high" style="font-size:0.75rem; color:#ccc;"></i>
+      <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="0.2">
+    </div>
+    <button id="player-btn" class="player-toggle-btn"><i id="player-icon" class="fa-solid fa-play"></i></button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const MUSIC_CONFIG = {
+      songTitle: "NASTY BABE - ПАТРИКИ (Lyric video, 2025)",
+      originalUrl: "https://youtu.be/aiigklosh-w?si=SrebT61qHH8B3WsD",
+      musicFile: "music.mp3"
+    };
+
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() { this.reset(true); }
+      reset(initial = false) {
+        this.x = Math.random() * canvas.width;
+        this.y = initial ? Math.random() * canvas.height : canvas.height + 10;
+        this.radius = Math.random() * 1.8 + 0.5; this.speedY = Math.random() * 0.5 + 0.2; this.opacity = Math.random() * 0.5 + 0.2;
+      }
+      update() { this.y -= this.speedY; if (this.y < -10) this.reset(false); }
+      draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.fill(); }
+    }
+    for (let i = 0; i < 40; i++) particles.push(new Particle());
+    function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+    animateParticles();
+
+    function renderMembers(dataList) {
+      document.getElementById('grid-boss').innerHTML = '';
+      document.getElementById('grid-leader').innerHTML = '';
+      document.getElementById('grid-support').innerHTML = '';
+      document.getElementById('grid-vip').innerHTML = '';
+      document.getElementById('grid-member').innerHTML = '';
+
+      dataList.forEach(m => {
+        const roleLower = (m.role || 'member').toLowerCase();
+        const gridElement = document.getElementById(`grid-${roleLower}`);
+        if (!gridElement) return;
+
+        let avatarHtml = m.avatar 
+          ? `<img src="${m.avatar}" alt="${m.name}" class="avatar-img" onerror="this.outerHTML='<i class=\\'${m.iconClass || 'fa-solid fa-user'} avatar-icon\\'></i>'">`
+          : `<i class="${m.iconClass || 'fa-solid fa-user'} avatar-icon"></i>`;
+
+        const cardHtml = `
+          <div class="member-card ${roleLower}" data-name="${(m.name || '').toLowerCase()}">
+            <div class="avatar-wrapper">${avatarHtml}</div>
+            <div class="member-name">${m.name}</div>
+            <div class="rank-badge">${roleLower.toUpperCase()}</div>
+            <a href="${m.facebook || '#'}" target="_blank" class="btn-facebook"><i class="fa-brands fa-facebook-f"></i> Facebook</a>
+          </div>
+        `;
+        gridElement.insertAdjacentHTML('beforeend', cardHtml);
+      });
+
+      filterMembers();
+    }
+
+    function filterMembers() {
+      const keyword = document.getElementById('search-input').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.member-card');
+      let totalVisible = 0;
+
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        if (name.includes(keyword)) { card.style.display = 'flex'; totalVisible++; }
+        else { card.style.display = 'none'; }
+      });
+
+      ['boss', 'leader', 'support', 'vip', 'member'].forEach(role => {
+        const section = document.getElementById(`section-${role}`);
+        const visibleCards = section.querySelectorAll(`.member-card[style*="display: flex"]`);
+        section.style.display = (visibleCards.length > 0) ? "block" : "none";
+      });
+
+      document.getElementById('no-results').style.display = (totalVisible === 0) ? 'block' : 'none';
+    }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHPEF07_zyE7hwZRPIBbwV_ewTz-xzdRo",
+      authDomain: "sixtyeight-68.firebaseapp.com",
+      projectId: "sixtyeight-68",
+      storageBucket: "sixtyeight-68.firebasestorage.app",
+      messagingSenderId: "736729322969",
+      appId: "1:736729322969:web:cfa26d6e4be992ffd7f5c8"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    /* Load background & Favicon */
+    db.collection("settings").doc("index_page").get().then((doc) => {
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.bgUrl) document.body.style.backgroundImage = `url('${data.bgUrl}')`;
+        if (data.siteIcon) document.getElementById('site-favicon').href = data.siteIcon;
+      }
+    });
+
+    db.collection("gang_members").onSnapshot((snapshot) => {
+      const liveMembers = [];
+      if (!snapshot.empty) snapshot.forEach(doc => liveMembers.push(doc.data()));
+      renderMembers(liveMembers);
+    });
+
+    /* Global Audio Controller */
+    document.addEventListener("DOMContentLoaded", () => {
+      const audio = document.getElementById("bg-audio");
+      const audioSource = document.getElementById("audio-source");
+      const playerTitle = document.getElementById("player-music-link");
+      const playerStatus = document.getElementById("player-status-text");
+      const statusDot = document.getElementById("status-dot");
+      const playerBtn = document.getElementById("player-btn");
+      const playerIcon = document.getElementById("player-icon");
+      const volumeSlider = document.getElementById("volume-slider");
+
+      audioSource.src = MUSIC_CONFIG.musicFile;
+      audio.load();
+      playerTitle.innerText = MUSIC_CONFIG.songTitle;
+      playerTitle.href = MUSIC_CONFIG.originalUrl;
+
+      audio.volume = 0.2;
+      volumeSlider.value = 0.2;
+      localStorage.setItem("music_volume", "0.2");
+
+      const savedTime = localStorage.getItem("music_time");
+      if (savedTime !== null) { audio.currentTime = parseFloat(savedTime); }
+
+      audio.addEventListener("timeupdate", () => {
+        localStorage.setItem("music_time", audio.currentTime);
+      });
+
+      function playMusic() {
+        audio.play().then(() => {
+          playerIcon.className = "fa-solid fa-pause";
+          playerStatus.innerText = "PLAYING";
+          statusDot.classList.add("active");
+          localStorage.setItem("music_player_state", "playing");
+          sessionStorage.setItem("music_user_stopped", "false");
+        }).catch(() => {});
+      }
+
+      function pauseMusic() {
+        audio.pause();
+        playerIcon.className = "fa-solid fa-play";
+        playerStatus.innerText = "STOPPED";
+        statusDot.classList.remove("active");
+        localStorage.setItem("music_player_state", "stopped");
+        sessionStorage.setItem("music_user_stopped", "true");
+      }
+
+      const isStoppedByUser = sessionStorage.getItem("music_user_stopped") === "true";
+      const globalState = localStorage.getItem("music_player_state");
+
+      if (!isStoppedByUser) {
+        playMusic();
+        const startOnInteraction = (e) => {
+          if (e.target.closest('#player-btn') || e.target.closest('#volume-slider')) return;
+          if (audio.paused && sessionStorage.getItem("music_user_stopped") !== "true") {
+            playMusic();
+          }
+          document.removeEventListener("click", startOnInteraction);
+        };
+        document.addEventListener("click", startOnInteraction);
+      } else {
+        pauseMusic();
+      }
+
+      playerBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (audio.paused) {
+          playMultiplier(); // หากมีการเรียกใช้ฟังก์ชันเล่นเพลง
+          playMusic();
+        } else {
+          pauseMusic();
+        }
+      });
+
+      volumeSlider.addEventListener("input", (e) => {
+        audio.volume = parseFloat(e.target.value);
+        localStorage.setItem("music_volume", e.target.value);
+      });
+    });
+  </script>
+</body>
+</html>
