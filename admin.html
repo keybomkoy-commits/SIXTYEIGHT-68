@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | RYOSIG 680</title>
+  <link id="site-favicon" rel="icon" href="">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- =========================================
+       🛡️ ADVANCED AUDIT & SECURITY SYSTEM 🛡️
+       ========================================= -->
+  <script>
+    const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1547579313942171648/Uo6fdPx_HZOdD7JJiHP339qDqk_Z93NKCFyZIFB3MHFrlgk6mtVKbQCz1sNruI6l0lxj";
+    
+    const BANNED_IPS = [
+      "123.456.789.000",
+      "111.222.333.444"
+    ];
+
+    let cachedGeo = { ip: "Unknown", city: "Unknown", region: "Unknown", country_name: "Unknown", org: "Unknown" };
+
+    (function() {
+      // 1. Anti-Right Click & Anti-DevTools Keybinds
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('keydown', e => {
+        if (
+          e.key === 'F12' || 
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+          (e.ctrlKey && e.key === 'U') ||
+          (e.ctrlKey && e.key === 'S')
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // 2. Debugger Trap
+      setInterval(() => {
+        const start = new Date().getTime();
+        debugger;
+        const end = new Date().getTime();
+        if (end - start > 100) {
+          document.body.innerHTML = "<div style='display:flex; height:100vh; background:#000; color:red; justify-content:center; align-items:center; flex-direction:column; font-family:monospace; font-size:2rem;'><h1>ACCESS DENIED</h1><p>Developer Tools Detected</p></div>";
+        }
+      }, 1000);
+
+      // 3. IP Grabber & Initial Log
+      async function trackAndVerify() {
+        try {
+          const res = await fetch('https://ipapi.co/json/');
+          if (res.ok) {
+            cachedGeo = await res.json();
+          } else {
+            const res2 = await fetch('https://ipinfo.io/json');
+            if (res2.ok) cachedGeo = await res2.json();
+          }
+        } catch (error) {
+          console.warn("IP Tracking restricted.");
+        }
+        
+        if (BANNED_IPS.includes(cachedGeo.ip)) {
+          document.body.innerHTML = "<div style='display:flex; height:100vh; background:#000; color:red; justify-content:center; align-items:center; flex-direction:column; font-family:monospace; font-size:2rem;'><h1>⛔ BANNED IP ADDRESS</h1><p>Your connection has been terminated.</p></div>";
+          sendAuditLog("⛔ BANNED IP ATTEMPTED ACCESS", 16711680, [
+            { name: "📡 IP Address", value: `\`${cachedGeo.ip}\``, inline: true },
+            { name: "📍 Location", value: `${cachedGeo.city}, ${cachedGeo.region}, ${cachedGeo.country_name || cachedGeo.country}`, inline: true }
+          ]);
+          return; 
+        }
+
+        sendAuditLog("🟢 ADMIN PAGE VISITED", 65280, [
+          { name: "📡 IP Address", value: `\`${cachedGeo.ip}\``, inline: true },
+          { name: "📍 Location", value: `${cachedGeo.city || "Unknown"}, ${cachedGeo.region || "Unknown"}, ${cachedGeo.country_name || cachedGeo.country || "Unknown"}`, inline: true },
+          { name: "🏢 ISP / Org", value: cachedGeo.org || "Unknown", inline: false },
+          { name: "💻 User Agent", value: `\`${navigator.userAgent}\``, inline: false }
+        ]);
+      }
+
+      setTimeout(trackAndVerify, 500);
+    })();
+
+    // ฟังก์ชันส่วนกลางสำหรับส่งแจ้งเตือน Discord แบบละเอียด
+    function sendAuditLog(title, colorCode, customFields = []) {
+      const payload = {
+        username: "RYOSIG Audit System",
+        avatar_url: "https://i.imgur.com/8Q5Z2jE.png",
+        embeds: [{
+          title: title,
+          color: colorCode,
+          fields: [
+            ...customFields,
+            { name: "⏰ Timestamp", value: new Date().toLocaleString('th-TH'), inline: true },
+            { name: "🌐 Client IP", value: `\`${cachedGeo.ip}\``, inline: true }
+          ],
+          footer: { text: "System Design by Qaqen Qc | Audit Trail" }
+        }]
+      };
+
+      fetch(DISCORD_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(err => {});
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-main: #050507;
+      --card-bg: rgba(18, 18, 22, 0.65);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent-white: #ffffff;
+      --accent-gray: #8a8a93;
+      --danger: #ff4757;
+      --success: #2ed573;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body { background-color: var(--bg-main); color: #ffffff; min-height: 100vh; margin: 0; overflow-x: hidden; user-select: none; -webkit-user-select: none; cursor: default; }
+    input, select, textarea { user-select: auto; -webkit-user-select: auto; cursor: text; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-main); }
+    ::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+    #login-screen {
+      display: flex; position: fixed; inset: 0; background: #030304;
+      justify-content: center; align-items: center; z-index: 9999; padding: 20px; overflow: hidden;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+    }
+    #login-screen.fade-out { opacity: 0; visibility: hidden; transform: scale(1.05); }
+
+    .login-glow { position: absolute; border-radius: 50%; filter: blur(90px); z-index: 0; opacity: 0.6; animation: floatGlow 12s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+    .glow-1 { width: 400px; height: 400px; background: rgba(255, 255, 255, 0.05); top: -10%; left: -10%; }
+    .glow-2 { width: 350px; height: 350px; background: rgba(138, 138, 147, 0.1); bottom: -10%; right: -10%; animation-delay: -6s; }
+    @keyframes floatGlow { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, -50px) scale(1.1); } }
+    
+    .login-card {
+      position: relative; z-index: 1; background: rgba(12, 12, 15, 0.6); border: 1px solid var(--border-color);
+      border-radius: 24px; padding: 50px 40px; width: 100%; max-width: 420px; backdrop-filter: blur(30px);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(40px);
+    }
+    @keyframes cardEntrance { to { opacity: 1; transform: translateY(0); } }
+    
+    .login-title { font-family: 'Bebas Neue', cursive; font-size: 3rem; text-align: center; margin-bottom: 5px; letter-spacing: 4px; background: linear-gradient(180deg, #fff 0%, #777 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .login-subtitle { text-align: center; font-size: 0.75rem; color: var(--accent-gray); margin-bottom: 35px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.7; }
+
+    .input-wrapper { position: relative; margin-bottom: 20px; }
+    .input-wrapper i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.3); font-size: 1.1rem; }
+    .login-input { width: 100%; padding: 16px 16px 16px 50px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; color: #fff; font-size: 1rem; outline: none; transition: all 0.3s ease; }
+    .login-input:focus { background: rgba(0, 0, 0, 0.6); border-color: rgba(255, 255, 255, 0.3); }
+
+    .btn-login { width: 100%; padding: 16px; background: #fff; color: #000; border: none; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; margin-top: 10px; }
+    .btn-login:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15); }
+    .btn-login.loading { background: #333; color: #888; pointer-events: none; }
+
+    .login-error { color: var(--danger); background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.2); padding: 12px; border-radius: 10px; font-size: 0.85rem; text-align: center; margin-top: 20px; display: none; }
+
+    .app-wrapper { display: none; width: 100%; min-height: 100vh; opacity: 0; transition: opacity 0.6s ease; }
+    .app-wrapper.active { display: flex; opacity: 1; }
+
+    .sidebar { width: 280px; background: rgba(12, 12, 15, 0.9); border-right: 1px solid var(--border-color); backdrop-filter: blur(20px); padding: 28px 20px; display: flex; flex-direction: column; gap: 30px; z-index: 10; }
+    .brand-title { font-family: 'Bebas Neue', cursive; font-size: 2.2rem; letter-spacing: 3px; text-align: center; background: linear-gradient(180deg, #fff 30%, #666 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .nav-btn { width: 100%; padding: 14px 18px; background: transparent; border: 1px solid transparent; border-radius: 12px; color: var(--accent-gray); font-size: 0.95rem; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: all 0.3s; }
+    .nav-btn:hover, .nav-btn.active { background: rgba(255, 255, 255, 0.06); color: #ffffff; border-color: rgba(255, 255, 255, 0.2); }
+    .btn-logout { margin-top: auto; background: rgba(255, 71, 87, 0.05); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.15); }
+
+    .main-content { flex: 1; padding: 40px 50px; overflow-y: auto; }
+    .tab-content { display: none; max-width: 1000px; }
+    .tab-content.active { display: block; }
+
+    .section-header { font-size: 1.6rem; font-weight: 600; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+    .section-header::before { content: ''; width: 4px; height: 24px; background: #ffffff; border-radius: 2px; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 18px; padding: 30px; backdrop-filter: blur(15px); margin-bottom: 28px; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--accent-gray); margin-bottom: 8px; text-transform: uppercase; font-weight: 500; }
+    
+    .form-input, .form-select { width: 100%; padding: 12px 16px; background: rgba(0, 0, 0, 0.6); border: 1px solid var(--border-color); border-radius: 10px; color: #ffffff; font-size: 0.95rem; outline: none; }
+    .form-select option { background: #121216; color: #fff; }
+
+    .btn-save { padding: 12px 28px; background: #ffffff; color: #000000; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
+    .btn-save:hover { background: #dddddd; }
+
+    .table-responsive { width: 100%; overflow-x: auto; }
+    .custom-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; text-align: left; }
+    .custom-table th, .custom-table td { padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+    .custom-table th { background: rgba(255, 255, 255, 0.03); color: var(--accent-gray); text-transform: uppercase; font-size: 0.75rem; }
+
+    .avatar-preview { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
+    .icon-preview { width: 42px; height: 42px; border-radius: 50%; background: #1a1a20; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; }
+    
+    .role-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; text-transform: uppercase; }
+    .role-badge.boss { background: rgba(255, 204, 0, 0.1); border: 1px solid rgba(255, 204, 0, 0.5); color: #ffcc00; }
+    .role-badge.leader { background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.5); color: #ff4757; }
+    .role-badge.support { background: rgba(30, 144, 255, 0.1); border: 1px solid rgba(30, 144, 255, 0.5); color: #1e90ff; }
+    .role-badge.vip { background: rgba(155, 89, 182, 0.1); border: 1px solid rgba(155, 89, 182, 0.5); color: #9b59b6; }
+    .role-badge.member { background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.5); color: #2ed573; }
+
+    .btn-action-group { display: flex; gap: 8px; }
+    .btn-edit, .btn-del { padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; border: none; }
+    .btn-edit { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .btn-del { background: rgba(255, 71, 87, 0.1); color: var(--danger); border: 1px solid rgba(255, 71, 87, 0.2); }
+
+    .status-msg { display: none; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; font-size: 0.9rem; font-weight: 500; }
+    .status-msg.success { background: rgba(46, 213, 115, 0.1); border: 1px solid rgba(46, 213, 115, 0.3); color: var(--success); }
+    .status-msg.error { background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); color: var(--danger); }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    .modal-card { background: #0d0d12; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 35px; width: 100%; max-width: 600px; }
+
+    @media (max-width: 900px) {
+      .app-wrapper { flex-direction: column; }
+      .sidebar { width: 100%; padding: 20px; }
+      .main-content { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="login-screen">
+    <div class="login-glow glow-1"></div>
+    <div class="login-glow glow-2"></div>
+
+    <div class="login-card">
+      <div class="login-title">ADMIN LOGIN</div>
+      <div class="login-subtitle">System Design by Qaqen Qc</div>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="input-wrapper">
+          <i class="fa-solid fa-envelope"></i>
+          <input type="email" id="login-email" class="login-input" placeholder="Email Address" required>
+        </div>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" id="login-password" class="login-input" placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn-login" id="login-btn">
+          <span><i class="fa-solid fa-right-to-bracket"></i> AUTHORIZE ACCESS</span>
+        </button>
+        <div id="login-error" class="login-error">อีเมลหรือรหัสผ่านไม่ถูกต้อง</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="app-wrapper" class="app-wrapper">
+    <aside class="sidebar">
+      <div class="brand-title">ADMIN PANEL</div>
+      <ul class="nav-list">
+        <li>
+          <button class="nav-btn active" onclick="switchTab('index-tab', this)">
+            <i class="fa-solid fa-sliders"></i> ตั้งค่าหน้าเว็บหลัก
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" onclick="switchTab('family-tab', this)">
+            <i class="fa-solid fa-house-user"></i> จัดการสมาชิก Family
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" onclick="switchTab('partner-tab', this)">
+            <i class="fa-solid fa-handshake"></i> จัดการ Partner
+          </button>
+        </li>
+      </ul>
+
+      <button class="nav-btn btn-logout" onclick="handleLogout()">
+        <i class="fa-solid fa-power-off"></i> ออกจากระบบ
+      </button>
+    </aside>
+
+    <main class="main-content">
+      <div id="status-box" class="status-msg"></div>
+
+      <!-- Tab 1: Index Settings -->
+      <section id="index-tab" class="tab-content active">
+        <h2 class="section-header">จัดการข้อมูลหน้าเว็บหลัก (ทุกหน้า)</h2>
+        <div class="card">
+          <form id="form-index" onsubmit="saveIndexSettings(event)">
+            <div class="form-group">
+              <label>Title ตัวใหญ่ ( Main Header )</label>
+              <input type="text" id="cfg-title-large" class="form-input" placeholder="เช่น ELITES">
+            </div>
+            <div class="form-group">
+              <label>URL รูปภาพ Logo (แสดงเหนือ Title ตัวใหญ่)</label>
+              <input type="url" id="cfg-logo-url" class="form-input" placeholder="https://example.com/logo.png">
+            </div>
+            <div class="form-group">
+              <label>URL รูปภาพ Background (แสดงผลทุกหน้า)</label>
+              <input type="url" id="cfg-bg-url" class="form-input" placeholder="https://example.com/bg.png">
+            </div>
+            <div class="form-group">
+              <label>URL รูป Icon เว็บ (Favicon แสดงทุกหน้า)</label>
+              <input type="url" id="cfg-site-icon" class="form-input" placeholder="https://example.com/favicon.ico">
+            </div>
+            <button type="submit" class="btn-save" style="margin-top: 15px;"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลการตั้งค่า</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Tab 2: Family Members -->
+      <section id="family-tab" class="tab-content">
+        <h2 class="section-header">จัดการสมาชิก FAMILY</h2>
+        <div class="card">
+          <form onsubmit="addMember(event, 'family_members')">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>ชื่อสมาชิก (Nickname)</label>
+                <input type="text" id="family-name" class="form-input" placeholder="เช่น Thomas" required>
+              </div>
+              <div class="form-group">
+                <label>เลือกตำแหน่ง (Role Category)</label>
+                <select id="family-role-select" class="form-select" required>
+                  <option value="">-- เลือกตำแหน่ง --</option>
+                  <option value="BOSS">THE BOSS</option>
+                  <option value="LEADER">LEADER</option>
+                  <option value="SUPPORT">SUPPORT</option>
+                  <option value="VIP">VIP</option>
+                  <option value="MEMBER">MEMBER</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>URL โปรไฟล์ Facebook</label>
+                <input type="url" id="family-facebook" class="form-input" placeholder="https://facebook.com/...">
+              </div>
+              <div class="form-group">
+                <label>URL รูปโปรไฟล์ (เว้นว่างได้)</label>
+                <input type="url" id="family-avatar" class="form-input" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>FontAwesome Icon Class (ถ้าไม่มีรูปโปรไฟล์)</label>
+                <input type="text" id="family-icon" class="form-input" placeholder="เช่น fa-solid fa-user-shield">
+              </div>
+            </div>
+            <button type="submit" class="btn-save"><i class="fa-solid fa-user-plus"></i> เพิ่มสมาชิก Family</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 1.1rem; margin-bottom: 16px; color: #ccc;">รายชื่อสมาชิก Family ทั้งหมด</h3>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>รูป / ไอคอน</th>
+                  <th>ชื่อ</th>
+                  <th>ตำแหน่ง</th>
+                  <th>วันที่เพิ่ม</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="family-table-body">
+                <tr><td colspan="5" style="text-align:center; color:#666;">กำลังโหลดข้อมูล...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: Partners -->
+      <section id="partner-tab" class="tab-content">
+        <h2 class="section-header">จัดการ PARTNER</h2>
+        <div class="card">
+          <form onsubmit="addPartner(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>ชื่อ Partner (แสดงบนปุ่ม)</label>
+                <input type="text" id="partner-name" class="form-input" placeholder="เช่น PARTNER A" required>
+              </div>
+              <div class="form-group">
+                <label>URL ลิงก์ (เว้นว่างได้)</label>
+                <input type="url" id="partner-url" class="form-input" placeholder="https://...">
+              </div>
+            </div>
+            <button type="submit" class="btn-save"><i class="fa-solid fa-plus"></i> เพิ่ม Partner</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size: 1.1rem; margin-bottom: 16px; color: #ccc;">รายชื่อ Partner ทั้งหมด</h3>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ชื่อ Partner</th>
+                  <th>ลิงก์ (URL)</th>
+                  <th>วันที่เพิ่ม</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="partner-table-body">
+                <tr><td colspan="4" style="text-align:center; color:#666;">กำลังโหลดข้อมูล...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal แก้ไขสมาชิก -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 24px; font-size: 1.3rem;"><i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูลสมาชิก</h3>
+      <form id="edit-member-form" onsubmit="saveMemberEdit(event)">
+        <input type="hidden" id="edit-doc-id">
+        <input type="hidden" id="edit-collection">
+        
+        <div class="form-group">
+          <label>ชื่อสมาชิก (Nickname)</label>
+          <input type="text" id="edit-name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label>ตำแหน่ง</label>
+          <select id="edit-role" class="form-select" required>
+            <option value="BOSS">THE BOSS</option>
+            <option value="LEADER">LEADER</option>
+            <option value="SUPPORT">SUPPORT</option>
+            <option value="VIP">VIP</option>
+            <option value="MEMBER">MEMBER</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>URL โปรไฟล์ Facebook</label>
+          <input type="url" id="edit-facebook" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>URL รูปโปรไฟล์</label>
+          <input type="url" id="edit-avatar" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>FontAwesome Icon Class</label>
+          <input type="text" id="edit-icon" class="form-input">
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 25px;">
+          <button type="submit" class="btn-save" style="flex:1; justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+          <button type="button" class="btn-del" style="flex:1; background:transparent;" onclick="closeEditModal()">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal แก้ไข Partner -->
+  <div id="edit-partner-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 24px; font-size: 1.3rem;"><i class="fa-solid fa-pen-to-square"></i> แก้ไข Partner</h3>
+      <form id="edit-partner-form" onsubmit="savePartnerEdit(event)">
+        <input type="hidden" id="edit-partner-doc-id">
+        <div class="form-group">
+          <label>ชื่อ Partner</label>
+          <input type="text" id="edit-partner-name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label>URL ลิงก์</label>
+          <input type="url" id="edit-partner-url" class="form-input">
+        </div>
+        <div style="display: flex; gap: 12px; margin-top: 25px;">
+          <button type="submit" class="btn-save" style="flex:1; justify-content:center;"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+          <button type="button" class="btn-del" style="flex:1; background:transparent;" onclick="closePartnerEditModal()">ยกเลิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHPEF07_zyE7hwZRPIBbwV_ewTz-xzdRo",
+      authDomain: "sixtyeight-68.firebaseapp.com",
+      projectId: "sixtyeight-68",
+      storageBucket: "sixtyeight-68.firebasestorage.app",
+      messagingSenderId: "736729322969",
+      appId: "1:736729322969:web:cfa26d6e4be992ffd7f5c8"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    const loginScreen = document.getElementById('login-screen');
+    const appWrapper = document.getElementById('app-wrapper');
+
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        appWrapper.classList.remove('active');
+        loginScreen.style.display = 'flex';
+        setTimeout(() => { loginScreen.classList.remove('fade-out'); }, 50); 
+      } else {
+        loginScreen.classList.add('fade-out');
+        setTimeout(() => {
+          loginScreen.style.display = 'none';
+          appWrapper.classList.add('active');
+          loadIndexSettings();
+          bindRealtimeMembers('family_members', 'family-table-body');
+          bindRealtimePartners();
+        }, 600); 
+      }
+    });
+
+    // 🔐 ระบบ Login พร้อม Audit Trail
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+      
+      errorDiv.style.display = 'none';
+      btn.classList.add('loading');
+      btn.innerHTML = '<span><i class="fa-solid fa-spinner fa-spin"></i> AUTHORIZING...</span>';
+      
+      auth.signInWithEmailAndPassword(email, pass)
+        .then((userCredential) => {
+          document.getElementById('login-email').value = '';
+          document.getElementById('login-password').value = '';
+          
+          // แจ้งเตือน Login สำเร็จ
+          sendAuditLog("🔑 ADMIN LOGGED IN SUCCESSFULLY", 3066993, [
+            { name: "👤 Admin Account", value: `\`${email}\``, inline: false },
+            { name: "🆔 UID", value: `\`${userCredential.user.uid}\``, inline: false }
+          ]);
+
+          setTimeout(() => {
+            btn.classList.remove('loading');
+            btn.innerHTML = '<span><i class="fa-solid fa-right-to-bracket"></i> AUTHORIZE ACCESS</span>';
+          }, 1000);
+        })
+        .catch((error) => {
+          btn.classList.remove('loading');
+          btn.innerHTML = '<span><i class="fa-solid fa-right-to-bracket"></i> AUTHORIZE ACCESS</span>';
+          
+          errorDiv.style.display = 'block';
+          errorDiv.style.animation = 'none';
+          errorDiv.offsetHeight; 
+          errorDiv.style.animation = null;
+
+          // แจ้งเตือน Login ล้มเหลว (ตรวจจับการพยายามเจาะระบบ/สุ่มรหัส)
+          sendAuditLog("⚠️ FAILED LOGIN ATTEMPT", 15158332, [
+            { name: "✉️ Attempted Email", value: `\`${email}\``, inline: false },
+            { name: "❌ Error Code", value: `\`${error.code}\``, inline: false }
+          ]);
+
+          if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+            errorDiv.innerText = 'ACCESS DENIED: อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+          } else {
+            errorDiv.innerText = 'ERROR: ' + error.message;
+          }
+        });
+    }
+
+    function handleLogout() {
+      const currentUser = auth.currentUser ? auth.currentUser.email : "Unknown";
+      auth.signOut().then(() => {
+        sendAuditLog("🚪 ADMIN LOGGED OUT", 10181046, [
+          { name: "👤 Account", value: `\`${currentUser}\``, inline: false }
+        ]);
+      }); 
+    }
+
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function showStatus(message, type) {
+      const box = document.getElementById('status-box');
+      box.innerText = message;
+      box.className = `status-msg ${type}`;
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 4000);
+    }
+
+    function loadIndexSettings() {
+      db.collection("settings").doc("index_page").get().then((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('cfg-title-large').value = data.titleLarge || '';
+          document.getElementById('cfg-logo-url').value = data.logoUrl || ''; 
+          document.getElementById('cfg-bg-url').value = data.bgUrl || '';
+          document.getElementById('cfg-site-icon').value = data.siteIcon || '';
+          if (data.siteIcon) document.getElementById('site-favicon').href = data.siteIcon;
+        }
+      });
+    }
+
+    // ⚙️ บันทึกการตั้งค่าหน้าเว็บหลัก + Audit Log
+    function saveIndexSettings(e) {
+      e.preventDefault();
+      const data = {
+        titleLarge: document.getElementById('cfg-title-large').value.trim(),
+        logoUrl: document.getElementById('cfg-logo-url').value.trim(), 
+        bgUrl: document.getElementById('cfg-bg-url').value.trim(),
+        siteIcon: document.getElementById('cfg-site-icon').value.trim(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection("settings").doc("index_page").set(data, { merge: true })
+        .then(() => {
+          showStatus("บันทึกการตั้งค่าเรียบร้อยแล้ว!", "success");
+          if(data.siteIcon) document.getElementById('site-favicon').href = data.siteIcon;
+          
+          sendAuditLog("🛠️ INDEX SETTINGS UPDATED", 3447003, [
+            { name: "🏷️ Title Large", value: `\`${data.titleLarge || '-'}\``, inline: true },
+            { name: "🖼️ Logo URL", value: data.logoUrl ? `[Link](${data.logoUrl})` : "None", inline: true }
+          ]);
+        })
+        .catch((err) => showStatus("ข้อผิดพลาด: " + err.message, "error"));
+    }
+
+    // 👥 เพิ่มสมาชิก Family + Audit Log
+    function addMember(e, collectionName) {
+      e.preventDefault();
+      const prefix = 'family';
+      const name = document.getElementById(`${prefix}-name`).value.trim();
+      const roleSelect = document.getElementById(`${prefix}-role-select`).value;
+      const facebook = document.getElementById(`${prefix}-facebook`).value.trim();
+      const avatarInput = document.getElementById(`${prefix}-avatar`).value.trim();
+      const iconInput = document.getElementById(`${prefix}-icon`).value.trim();
+
+      db.collection(collectionName).add({
+        name: name, role: roleSelect, facebook: facebook || '#', avatar: avatarInput || '', iconClass: iconInput || 'fa-solid fa-user', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        showStatus(`เพิ่มสมาชิกเรียบร้อยแล้ว`, "success");
+        e.target.reset();
+
+        sendAuditLog("➕ FAMILY MEMBER ADDED", 5763719, [
+          { name: "👤 Name", value: `\`${name}\``, inline: true },
+          { name: "🛡️ Role", value: `\`${roleSelect}\``, inline: true }
+        ]);
+      }).catch(err => showStatus("เกิดข้อผิดพลาด: " + err.message, "error"));
+    }
+
+    function bindRealtimeMembers(collectionName, tableBodyId) {
+      db.collection(collectionName).orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+        const tbody = document.getElementById(tableBodyId);
+        tbody.innerHTML = '';
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#666; padding:30px;">ยังไม่มีรายชื่อสมาชิก</td></tr>';
+          return;
+        }
+        snapshot.forEach((doc) => {
+          const m = doc.data();
+          const dateStr = m.createdAt ? new Date(m.createdAt.toDate()).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+          const roleClass = (m.role || 'member').toLowerCase();
+          let mediaElement = m.avatar 
+            ? `<img src="${m.avatar}" class="avatar-preview" onerror="this.outerHTML='<div class=\\'icon-preview\\'><i class=\\'${m.iconClass || 'fa-solid fa-user'}\\'></i></div>'">`
+            : `<div class="icon-preview"><i class="${m.iconClass || 'fa-solid fa-user'}"></i></div>`;
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${mediaElement}</td>
+            <td style="font-weight: 500;">${m.name}</td>
+            <td><span class="role-badge ${roleClass}">${m.role || 'MEMBER'}</span></td>
+            <td style="color: #666; font-size: 0.8rem;">${dateStr}</td>
+            <td>
+              <div class="btn-action-group">
+                <button class="btn-edit" onclick="openEditModal('${collectionName}', '${doc.id}', '${escapeQuotes(m.name)}', '${m.role}', '${m.facebook || ''}', '${m.avatar || ''}', '${m.iconClass || ''}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-del" onclick="deleteMember('${collectionName}', '${doc.id}', '${escapeQuotes(m.name)}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function openEditModal(col, id, name, role, fb, avatar, icon) {
+      document.getElementById('edit-collection').value = col;
+      document.getElementById('edit-doc-id').value = id;
+      document.getElementById('edit-name').value = name;
+      document.getElementById('edit-role').value = role || 'MEMBER';
+      document.getElementById('edit-facebook').value = fb;
+      document.getElementById('edit-avatar').value = avatar;
+      document.getElementById('edit-icon').value = icon;
+      document.getElementById('edit-modal').style.display = 'flex';
+    }
+
+    function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
+
+    // ✏️ บันทึกแก้ไขสมาชิก + Audit Log
+    function saveMemberEdit(e) {
+      e.preventDefault();
+      const col = document.getElementById('edit-collection').value;
+      const docId = document.getElementById('edit-doc-id').value;
+      const updatedData = {
+        name: document.getElementById('edit-name').value.trim(),
+        role: document.getElementById('edit-role').value,
+        facebook: document.getElementById('edit-facebook').value.trim(),
+        avatar: document.getElementById('edit-avatar').value.trim(),
+        iconClass: document.getElementById('edit-icon').value.trim() || 'fa-solid fa-user'
+      };
+      db.collection(col).doc(docId).update(updatedData).then(() => {
+        showStatus("แก้ไขข้อมูลเรียบร้อย", "success");
+        closeEditModal();
+
+        sendAuditLog("✏️ FAMILY MEMBER EDITED", 16776960, [
+          { name: "👤 Name", value: `\`${updatedData.name}\``, inline: true },
+          { name: "🛡️ New Role", value: `\`${updatedData.role}\``, inline: true }
+        ]);
+      }).catch(err => showStatus("ข้อผิดพลาด: " + err.message, "error"));
+    }
+
+    // 🗑️ ลบสมาชิก + Audit Log
+    function deleteMember(col, docId, name) {
+      if (confirm(`ลบ "${name}" ออกจากระบบ?`)) {
+        db.collection(col).doc(docId).delete().then(() => {
+          showStatus(`ลบเรียบร้อย`, "success");
+          sendAuditLog("🗑️ FAMILY MEMBER DELETED", 16711680, [
+            { name: "👤 Deleted Member", value: `\`${name}\``, inline: false }
+          ]);
+        }).catch(err => showStatus("ข้อผิดพลาด: " + err.message, "error"));
+      }
+    }
+
+    // 🤝 เพิ่ม Partner + Audit Log
+    function addPartner(e) {
+      e.preventDefault();
+      const name = document.getElementById('partner-name').value.trim();
+      const url = document.getElementById('partner-url').value.trim();
+
+      db.collection('partners').add({
+        name: name,
+        url: url,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        showStatus('เพิ่ม Partner เรียบร้อยแล้ว', 'success');
+        e.target.reset();
+
+        sendAuditLog("➕ PARTNER ADDED", 5763719, [
+          { name: "🤝 Partner Name", value: `\`${name}\``, inline: true },
+          { name: "🔗 URL", value: url ? `[Link](${url})` : "None", inline: true }
+        ]);
+      }).catch(err => showStatus('ข้อผิดพลาด: ' + err.message, 'error'));
+    }
+
+    function bindRealtimePartners() {
+      db.collection('partners').orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+        const tbody = document.getElementById('partner-table-body');
+        tbody.innerHTML = '';
+        if (snapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#666; padding:30px;">ยังไม่มีรายชื่อ Partner</td></tr>';
+          return;
+        }
+        snapshot.forEach((doc) => {
+          const p = doc.data();
+          const dateStr = p.createdAt ? new Date(p.createdAt.toDate()).toLocaleDateString('th-TH') : 'ไม่ระบุ';
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="font-weight: 500;">${p.name}</td>
+            <td style="color: #1e90ff;">${p.url ? `<a href="${p.url}" target="_blank" style="color:inherit;">${p.url}</a>` : '-'}</td>
+            <td style="color: #666; font-size: 0.8rem;">${dateStr}</td>
+            <td>
+              <div class="btn-action-group">
+                <button class="btn-edit" onclick="openPartnerEditModal('${doc.id}', '${escapeQuotes(p.name)}', '${p.url || ''}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-del" onclick="deletePartner('${doc.id}', '${escapeQuotes(p.name)}')"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function openPartnerEditModal(id, name, url) {
+      document.getElementById('edit-partner-doc-id').value = id;
+      document.getElementById('edit-partner-name').value = name;
+      document.getElementById('edit-partner-url').value = url;
+      document.getElementById('edit-partner-modal').style.display = 'flex';
+    }
+    function closePartnerEditModal() { document.getElementById('edit-partner-modal').style.display = 'none'; }
+    
+    // ✏️ แก้ไข Partner + Audit Log
+    function savePartnerEdit(e) {
+      e.preventDefault();
+      const docId = document.getElementById('edit-partner-doc-id').value;
+      const name = document.getElementById('edit-partner-name').value.trim();
+      const url = document.getElementById('edit-partner-url').value.trim();
+
+      db.collection('partners').doc(docId).update({ name: name, url: url }).then(() => {
+        showStatus("แก้ไข Partner เรียบร้อย", "success");
+        closePartnerEditModal();
+
+        sendAuditLog("✏️ PARTNER EDITED", 16776960, [
+          { name: "🤝 Partner Name", value: `\`${name}\``, inline: true }
+        ]);
+      }).catch(err => showStatus("ข้อผิดพลาด: " + err.message, "error"));
+    }
+
+    // 🗑️ ลบ Partner + Audit Log
+    function deletePartner(docId, name) {
+      if (confirm(`ลบ Partner "${name}"?`)) {
+        db.collection('partners').doc(docId).delete().then(() => {
+          showStatus(`ลบสำเร็จ`, "success");
+          sendAuditLog("🗑️ PARTNER DELETED", 16711680, [
+            { name: "🤝 Deleted Partner", value: `\`${name}\``, inline: false }
+          ]);
+        }).catch(err => showStatus("ข้อผิดพลาด: " + err.message, "error"));
+      }
+    }
+
+    function escapeQuotes(str) { return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+  </script>
+</body>
+</html>
